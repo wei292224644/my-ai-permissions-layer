@@ -1,6 +1,6 @@
 {
   "name": "daniel-ai-permissions-openclaw",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "AI Permissions Layer plugin for OpenClaw. Intercepts tool calls, applies rules, approval flow via chat.",
   "type": "module",
   "main": "dist/index.js",
@@ -33,7 +33,7 @@
     "openclaw": ">=2026.1.0"
   },
   "dependencies": {
-    "daniel-ai-permissions-layer": "^0.2.3"
+    "daniel-ai-permissions-layer": "^0.2.5"
   },
   "devDependencies": {
     "openclaw": "latest",

@@ -79,6 +79,18 @@ export function getApprovalStatus(uuid: string): 'pending' | 'approved' | 'denie
   return approval.status;
 }
 
+export function getLatestPendingApproval(): PendingApproval | null {
+  let latest: PendingApproval | null = null;
+  for (const approval of store.values()) {
+    if (approval.status === 'pending') {
+      if (!latest || approval.createdAt > latest.createdAt) {
+        latest = approval;
+      }
+    }
+  }
+  return latest;
+}
+
 function cleanupExpired(): void {
   const now = Date.now();
   for (const [uuid, approval] of store.entries()) {
@@ -95,10 +107,23 @@ export function parseApprovalFromMessage(content: string): {
   uuid: string;
   decision: 'APPROVE' | 'DENY';
 } | null {
-  const trimmed = (content || '').trim();
-  const approveMatch = trimmed.match(new RegExp(`(?:^|\\s)(?:/approve\\s+)?approve\\s+(${UUID_REGEX})`, 'i'));
+  const trimmed = (content || '').trim().toLowerCase();
+
+  if (trimmed === 'yes' || trimmed === 'y') {
+    const latest = getLatestPendingApproval();
+    if (latest) return { uuid: latest.uuid, decision: 'APPROVE' };
+    return null;
+  }
+
+  if (trimmed === 'no' || trimmed === 'n') {
+    const latest = getLatestPendingApproval();
+    if (latest) return { uuid: latest.uuid, decision: 'DENY' };
+    return null;
+  }
+
+  const approveMatch = (content || '').trim().match(new RegExp(`(?:^|\\s)(?:/approve\\s+)?approve\\s+(${UUID_REGEX})`, 'i'));
   if (approveMatch) return { uuid: approveMatch[1].toLowerCase(), decision: 'APPROVE' };
-  const denyMatch = trimmed.match(new RegExp(`(?:^|\\s)(?:/deny\\s+)?deny\\s+(${UUID_REGEX})`, 'i'));
+  const denyMatch = (content || '').trim().match(new RegExp(`(?:^|\\s)(?:/deny\\s+)?deny\\s+(${UUID_REGEX})`, 'i'));
   if (denyMatch) return { uuid: denyMatch[1].toLowerCase(), decision: 'DENY' };
   return null;
 }
