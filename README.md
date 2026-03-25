@@ -21,7 +21,7 @@ Middleware that intercepts AI agent tool calls, applies your rules, and returns 
 ## Quick Start (OpenClaw)
 
 ```bash
-openclaw plugins install ai-permissions-openclaw
+openclaw plugins install daniel-ai-permissions-openclaw
 openclaw gateway restart
 openclaw ai-permissions compile
 ```
@@ -117,7 +117,7 @@ Internal tools (pairing, device-pair, openclaw.*) are never intercepted.
 ### Installation
 
 ```bash
-openclaw plugins install ai-permissions-openclaw
+openclaw plugins install daniel-ai-permissions-openclaw
 openclaw gateway restart
 ```
 
@@ -212,7 +212,7 @@ This is enabled by default. Disable or customize via `pathProtection` in plugin 
 
 ## Configuration
 
-Edit `~/.openclaw/openclaw.json` under `plugins.entries.ai-permissions-openclaw.config`:
+Edit `~/.openclaw/openclaw.json` under `plugins.entries.daniel-ai-permissions-openclaw.config`:
 
 | Option | Default | Description |
 |--------|---------|--------------|
@@ -227,7 +227,7 @@ Edit `~/.openclaw/openclaw.json` under `plugins.entries.ai-permissions-openclaw.
 {
   "plugins": {
     "entries": {
-      "ai-permissions-openclaw": {
+      "daniel-ai-permissions-openclaw": {
         "enabled": true,
         "config": {
           "rulesPath": "~/.openclaw/ai-permissions-rules.json",
@@ -264,11 +264,11 @@ npx ai-permissions-compile --openclaw examples/rules.yaml ~/.openclaw/ai-permiss
 ## Library Usage
 
 ```bash
-npm install ai-permissions-layer
+npm install daniel-ai-permissions-layer
 ```
 
 ```ts
-import { createMiddleware, match } from 'ai-permissions-layer';
+import { createMiddleware, match } from 'daniel-ai-permissions-layer';
 
 const rules = [
   { action: 'block', tool: 'gmail.delete', reason: 'no delete' },
