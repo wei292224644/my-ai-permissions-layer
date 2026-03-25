@@ -4,7 +4,9 @@
 
 - block gmail.delete and gmail.batchDelete - never auto-delete emails
 - block payments and money transfers - no financial actions
-- require approval before exec, bash, or process - ask before running commands
+- block exec when command matches "rm -rf or sudo or curl.*sh" - never dangerous commands
+- allow exec when command matches "ls cat head tail grep pwd which file echo cd" - read-only commands are safe
+- require approval before exec, bash, or process - ask before running other commands
 - require approval before write, edit, apply_patch - ask before file changes
 - allow read, search, list - safe read-only operations
 - allow gmail.list and gmail.get - reading emails is fine

@@ -95,4 +95,47 @@ describe('match', () => {
     );
     expect(result.decision).toBe('BLOCK');
   });
+
+  it('matches argsPattern for fine-grained control', () => {
+    const rules: CompiledRule[] = [
+      { action: 'allow', tool: 'exec', argsPattern: '^(ls|cat|grep)', reason: 'read-only' },
+      { action: 'require_approval', tool: 'exec', argsPattern: '^(rm|mv)', reason: 'write ops' },
+      { action: 'block', tool: 'exec', argsPattern: 'rm -rf', reason: 'dangerous' },
+    ];
+    // ls → allow
+    const allowResult = match(
+      { toolName: 'exec', args: { command: 'ls -la' } },
+      { text: 'list files' },
+      rules
+    );
+    expect(allowResult.decision).toBe('ALLOW');
+
+    // rm (not -rf) → require_approval
+    const approvalResult = match(
+      { toolName: 'exec', args: { command: 'rm file.txt' } },
+      { text: 'remove file' },
+      rules
+    );
+    expect(approvalResult.decision).toBe('REQUIRES_APPROVAL');
+
+    // rm -rf → block (higher priority)
+    const blockResult = match(
+      { toolName: 'exec', args: { command: 'rm -rf /tmp/garbage' } },
+      { text: 'clean up' },
+      rules
+    );
+    expect(blockResult.decision).toBe('BLOCK');
+  });
+
+  it('rules without argsPattern match any args', () => {
+    const rules: CompiledRule[] = [
+      { action: 'block', tool: 'exec', reason: 'no exec' },
+    ];
+    const result = match(
+      { toolName: 'exec', args: { command: 'ls' } },
+      { text: 'list' },
+      rules
+    );
+    expect(result.decision).toBe('BLOCK');
+  });
 });

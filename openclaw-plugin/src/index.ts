@@ -43,6 +43,15 @@ function resolvePath(p: string): string {
   return path.resolve(p);
 }
 
+function extractCommand(args: Record<string, unknown>): string | null {
+  for (const key of ['command', 'cmd', 'script', 'code', 'args']) {
+    const val = args[key];
+    if (typeof val === 'string' && val.length > 0) return val;
+    if (Array.isArray(val)) return (val as unknown[]).join(' ');
+  }
+  return null;
+}
+
 const DEFAULT_RULES_YAML = resolvePath('~/.openclaw/rules.yaml');
 
 const STARTER_RULES = `# AI Permissions - edit and run: openclaw ai-permissions compile
@@ -134,12 +143,14 @@ export default function aiPermissionsPlugin(api: {
         logger.info(`[ai-permissions-openclaw] ALLOWED: User approved (one-use consumed)`);
         return undefined;
       }
+      const cmd = extractCommand(params);
+      const cmdLine = cmd ? `\nCommand: ${cmd}` : '';
       const uuid = createApprovalRequest(toolName, params, result.reason ?? 'No matching rule');
       logger.warn(`[ai-permissions-openclaw] REQUIRES_APPROVAL: ${result.reason ?? 'No matching rule'} (uuid=${uuid})`);
       return {
         block: true,
         blockReason:
-          `[Approval required] ${result.reason ?? 'No matching rule'}\n\n` +
+          `[Approval required] ${result.reason ?? 'No matching rule'}${cmdLine}\n\n` +
           `Request ID: ${uuid}\n\n` +
           `Ask the user: Reply APPROVE ${uuid} to allow this action, or DENY ${uuid} to block it. ` +
           `This is a one-use approval; after APPROVE, retry the same action.`,

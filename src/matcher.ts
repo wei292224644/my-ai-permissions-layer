@@ -17,6 +17,14 @@ export interface MatchOptions {
   defaultWhenNoMatch?: DefaultWhenNoMatch;
 }
 
+function matchArgs(rule: CompiledRule, toolCall: ToolCall): boolean {
+  if (!rule.argsPattern) return true;
+  const argsStr = Object.values(toolCall.args)
+    .filter((v) => typeof v === 'string' || typeof v === 'number')
+    .join(' ');
+  return new RegExp(rule.argsPattern).test(argsStr);
+}
+
 export function match(
   toolCall: ToolCall,
   intent: Intent,
@@ -32,11 +40,12 @@ export function match(
       (rule.tool && rule.tool === toolCall.toolName) ||
       (rule.toolPattern &&
         new RegExp(rule.toolPattern).test(toolCall.toolName));
+    const argsMatch = matchArgs(rule, toolCall);
     const intentMatch =
       !rule.intentPattern ||
       new RegExp(rule.intentPattern, 'i').test(intent.text);
 
-    if (toolMatch && intentMatch) {
+    if (toolMatch && argsMatch && intentMatch) {
       if (!matched || rule.action === 'block') {
         matched = rule;
         matchedAction = rule.action;

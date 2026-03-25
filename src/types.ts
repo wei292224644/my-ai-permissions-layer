@@ -16,6 +16,8 @@ export interface CompiledRule {
   tool?: string;
   toolPattern?: string;
   intentPattern?: string;
+  /** Regex to match against tool call arguments (joined as space-separated string) */
+  argsPattern?: string;
   reason: string;
 }
 

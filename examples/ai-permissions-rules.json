@@ -11,9 +11,21 @@
       "reason": "User: never auto-delete emails"
     },
     {
+      "action": "block",
+      "tool": "exec",
+      "argsPattern": "rm -rf|sudo|curl.*sh",
+      "reason": "User: never dangerous commands"
+    },
+    {
+      "action": "allow",
+      "tool": "exec",
+      "argsPattern": "^(ls|cat|head|tail|grep|pwd|which|file|echo|cd)",
+      "reason": "User: read-only commands are safe"
+    },
+    {
       "action": "require_approval",
       "tool": "exec",
-      "reason": "User: ask before running commands"
+      "reason": "User: ask before running other commands"
     },
     {
       "action": "require_approval",
