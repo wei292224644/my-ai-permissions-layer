@@ -152,7 +152,7 @@ export default function aiPermissionsPlugin(api: {
         blockReason:
           `[Approval required] ${result.reason ?? 'No matching rule'}${cmdLine}\n\n` +
           `Request ID: ${uuid}\n\n` +
-          `Ask the user: Reply APPROVE ${uuid} to allow this action, or DENY ${uuid} to block it. ` +
+          `Ask the user: Reply yes to allow, or no to block. Or: APPROVE ${uuid} / DENY ${uuid}. ` +
           `This is a one-use approval; after APPROVE, retry the same action.`,
       };
     }
