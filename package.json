@@ -1,6 +1,6 @@
 {
-  "name": "ai-permissions-layer",
-  "version": "0.1.2",
+  "name": "@dniel/ai-permissions-layer",
+  "version": "0.2.0",
   "description": "Offline-first middleware for AI agent tool call permissions. Intercepts tool calls, applies rules, returns ALLOW | BLOCK | REQUIRES_APPROVAL.",
   "type": "module",
   "main": "dist/index.js",
@@ -22,12 +22,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/dev-nolant/ai-permissions-layer.git"
+    "url": "https://github.com/wei292224644/my-ai-permissions-layer.git"
   },
   "bugs": {
-    "url": "https://github.com/dev-nolant/ai-permissions-layer/issues"
+    "url": "https://github.com/wei292224644/my-ai-permissions-layer/issues"
   },
-  "homepage": "https://github.com/dev-nolant/ai-permissions-layer#readme",
+  "homepage": "https://github.com/wei292224644/my-ai-permissions-layer#readme",
   "keywords": [
     "ai",
     "permissions",
