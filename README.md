@@ -39,7 +39,7 @@ Rules define what the agent can do. Each rule has an **action** and applies to o
 | Action | Behavior |
 |--------|----------|
 | **block** | Tool is never allowed. The agent sees an error and cannot proceed. |
-| **require_approval** | Tool is blocked until you reply `APPROVE <uuid>` in chat. One-time approval per request. |
+| **require_approval** | Tool is blocked until you reply `yes` (or `y`) in chat. One-time approval per request. |
 | **allow** | Tool runs without asking. |
 
 ### Plain-Text Format (YAML)
@@ -50,6 +50,7 @@ Write rules in plain English, one per line, each starting with `-`:
 # Block dangerous actions
 - block gmail.delete and gmail.batchDelete - never auto-delete emails
 - block payments and money transfers - no financial actions
+- block exec when command matches "rm -rf or sudo or curl.*sh" - never dangerous commands
 
 # Require approval before risky operations
 - require approval before exec, bash, or process - ask before running commands
@@ -58,6 +59,7 @@ Write rules in plain English, one per line, each starting with `-`:
 # Allow safe read-only operations
 - allow read, search, list - safe read-only operations
 - allow gmail.list and gmail.get - reading emails is fine
+- allow exec when command matches "ls cat head tail grep pwd which file echo cd" - read-only commands
 ```
 
 **Compile** these into JSON with `openclaw ai-permissions compile` or `npx ai-permissions-compile --openclaw`. The compiler uses an LLM to infer tool names from your wording.
@@ -82,13 +84,15 @@ After compiling, rules become JSON:
 {
   "rules": [
     { "action": "block", "tool": "gmail.delete", "reason": "never auto-delete emails" },
+    { "action": "block", "tool": "exec", "argsPattern": "rm -rf", "reason": "never dangerous commands" },
+    { "action": "allow", "tool": "exec", "argsPattern": "^(ls|cat|head|tail|grep|pwd)", "reason": "read-only commands" },
     { "action": "require_approval", "tool": "write", "reason": "ask before file changes" },
     { "action": "allow", "tool": "read", "reason": "safe read-only operations" }
   ]
 }
 ```
 
-Each rule: `action`, `tool`, `reason`. The plugin loads this file; you typically edit the YAML and recompile.
+Each rule: `action`, `tool`, optional `argsPattern`, `reason`. The `argsPattern` field enables fine-grained control over which command arguments trigger a rule. The plugin loads this file; you typically edit the YAML and recompile.
 
 ### OpenClaw Tool Names
 
@@ -167,14 +171,15 @@ List tools in one rule (compiler creates one JSON rule per tool):
 - require approval before write, edit, apply_patch - ask before file changes
 ```
 
-### Advanced: toolPattern and intentPattern (JSON only)
+### Advanced: toolPattern, intentPattern, and argsPattern (JSON only)
 
 For programmatic use, compiled rules can include:
 
 - **toolPattern** — regex to match tool names (e.g. `gmail\.(delete|batchDelete)`)
 - **intentPattern** — regex to match user intent text (optional)
+- **argsPattern** — regex to match tool call arguments (joined as space-separated string, e.g. `^(ls|cat)` for exec commands)
 
-These are produced by the compiler when it infers patterns. You can also edit the JSON directly for fine-grained control.
+These are produced by the compiler when you write `when command matches "REGEX"` in YAML. You can also edit the JSON directly for fine-grained control.
 
 ---
 
@@ -183,22 +188,33 @@ These are produced by the compiler when it infers patterns. You can also edit th
 When a tool needs approval:
 
 1. The agent attempts the tool.
-2. The plugin blocks it and returns a message with a **request ID** (UUID).
-3. You reply in chat: `APPROVE <uuid>` to allow once, or `DENY <uuid>` to block.
+2. The plugin blocks it and returns a message showing **what command** it wants to run and a **request ID** (UUID).
+3. You reply in chat: `yes` (or `y`) to approve the most recent request, `no` (or `n`) to deny it. Or reply `APPROVE <uuid>` / `DENY <uuid>` for a specific request.
 4. If you approved, the agent can retry the same action; the approval is consumed.
 
 **Example:**
 
 ```
-Agent: I'll run `write` to save the file.
-[Blocked] [Approval required] ask before file changes
+Agent: I'll run `rm` to clean up temp files.
+[Approval required] ask before running other commands
+Command: rm -rf /tmp/garbage
+
 Request ID: a1b2c3d4-...
-Reply APPROVE a1b2c3d4-... to allow, or DENY a1b2c3d4-... to block.
+Reply yes to allow, or no to block. Or: APPROVE a1b2c3d4-... / DENY a1b2c3d4-...
 
-You: APPROVE a1b2c3d4-...
+You: yes
 
-Agent: [retries the write; it succeeds]
+Agent: [retries the rm; it succeeds]
 ```
+
+**Shortcuts:**
+
+| Reply | Behavior |
+|-------|----------|
+| `yes` or `y` | Approve the most recent pending request |
+| `no` or `n` | Deny the most recent pending request |
+| `APPROVE <uuid>` | Approve a specific request |
+| `DENY <uuid>` | Deny a specific request |
 
 ---
 
@@ -272,6 +288,8 @@ import { createMiddleware, match } from 'daniel-ai-permissions-layer';
 
 const rules = [
   { action: 'block', tool: 'gmail.delete', reason: 'no delete' },
+  { action: 'block', tool: 'exec', argsPattern: 'rm -rf', reason: 'never delete recursively' },
+  { action: 'allow', tool: 'exec', argsPattern: '^(ls|cat|grep)', reason: 'read-only commands' },
   { action: 'require_approval', tool: 'gmail.send', reason: 'ask first' },
   { action: 'allow', tool: 'read', reason: 'read-only ok' },
 ];
