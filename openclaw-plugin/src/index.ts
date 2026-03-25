@@ -16,7 +16,7 @@ import {
   type CompiledRule,
   type DefaultWhenNoMatch,
   type PathProtectionConfig,
-} from '@dniel/ai-permissions-layer';
+} from 'daniel-ai-permissions-layer';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';

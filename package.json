@@ -1,5 +1,5 @@
 {
-  "name": "@dniel/ai-permissions-layer",
+  "name": "daniel-ai-permissions-layer",
   "version": "0.2.0",
   "description": "Offline-first middleware for AI agent tool call permissions. Intercepts tool calls, applies rules, returns ALLOW | BLOCK | REQUIRES_APPROVAL.",
   "type": "module",
