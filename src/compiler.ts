@@ -8,7 +8,9 @@ Rules:
 - "ask me" / "prompt me" / "before X" → action: "require_approval" (NEVER "allow")
 - "allow" → action: "allow"
 
-Output ONLY valid JSON: { "rules": [ { "action": "...", "tool": "...", "reason": "..." } ] }
+When the user writes "when command matches REGEX" or "when args match REGEX", include an "argsPattern" field with that regex.
+
+Output ONLY valid JSON: { "rules": [ { "action": "...", "tool": "...", "argsPattern": "...", "reason": "..." } ] }
 Include tool names when inferable (e.g. gmail.delete, gmail.batchDelete for email delete).
 `;
 
